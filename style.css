@@ -1,0 +1,90 @@
+/* --- Estilos generales --- */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0f172a; /* panel principal oscuro */
+    color: #e2e8f0;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Panel lateral --- */
+aside {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* --- Tarjetas de datos --- */
+.data-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+.data-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(255, 255, 255, 0.1);
+}
+
+/* --- Estado de conexión --- */
+#status-display {
+    transition: background-color 0.5s ease, color 0.5s ease;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* --- Botones generales --- */
+button {
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.03);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Estados de dispositivos --- */
+#ventilador-estado,
+#ventana-estado,
+#alarma-estado {
+    font-weight: 600;
+    text-align: center;
+    margin-top: 0.75rem;
+}
+
+/* --- Colores para estados --- */
+.text-green-400 { color: #34d399; }
+.text-red-400 { color: #f87171; }
+.text-yellow-400 { color: #facc15; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    main {
+        padding: 2rem 1rem;
+    }
+
+    section.grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    button {
+        width: 100%;
+    }
+}
