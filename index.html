@@ -150,10 +150,12 @@
 
         openBtn.addEventListener("click", () => {
             sidebar.classList.remove("-translate-x-full");
+            openBtn.style.display = "none"; // OCULTAR BOTÓN ABRIR
         });
 
         closeBtn.addEventListener("click", () => {
             sidebar.classList.add("-translate-x-full");
+            openBtn.style.display = "block"; // VOLVER A MOSTRAR BOTÓN ABRIR
         });
     </script>
 
