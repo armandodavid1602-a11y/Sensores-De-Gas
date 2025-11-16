@@ -3,166 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Gases MQTT</title>
+    <title>Dashboard Gases</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css">
+
+    <style>
+        /* TRANSICIÓN SUAVE DEL PANEL */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* FONDO OSCURO PARA CERRAR AL TOCAR FUERA */
+        #overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* OCULTAR EL BOTÓN CUANDO EL MENÚ ESTÁ ABIERTO */
+        .hidden-menu-btn {
+            display: none !important;
+        }
+    </style>
 </head>
 
-<body class="min-h-screen flex bg-gray-900 text-gray-100">
+<body class="min-h-screen flex bg-gray-900 text-gray-100 relative">
 
-    <!-- BOTÓN PARA ABRIR MENÚ (solo móvil) -->
-    <button id="openMenu" class="md:hidden fixed top-2 left-2 z-50 bg-gray-700 p-3 rounded-lg shadow-lg">
+    <!-- Fondo para cerrar tocando fuera -->
+    <div id="overlay"
+        class="fixed inset-0 bg-black bg-opacity-50 opacity-0 pointer-events-none z-20"></div>
+
+    <!-- Botón de menú (posición absoluta) -->
+    <button id="menuBtn"
+        class="md:hidden fixed top-3 left-3 z-30 bg-blue-600 p-2 rounded-lg shadow-lg text-white text-xl">
         ☰
     </button>
 
-    <!-- PANEL LATERAL -->
+    <!-- Panel lateral -->
     <aside id="sidebar"
-        class="w-72 bg-gray-800 p-6 flex flex-col justify-between shadow-2xl
-        fixed md:static inset-y-0 left-0 transform -translate-x-full md:translate-x-0
-        transition-transform duration-300 z-40">
+        class="w-72 bg-gray-800 p-6 flex flex-col justify-start shadow-2xl fixed inset-y-0 left-0 transform -translate-x-full z-30">
 
-        <!-- BOTÓN PARA CERRAR (solo móvil) -->
-        <button id="closeMenu" class="md:hidden bg-gray-700 p-2 rounded mb-4">
-            ✖
+        <!-- Botón X de cerrar -->
+        <button id="closeBtn"
+            class="text-white text-2xl absolute top-3 right-3">
+            ✕
         </button>
 
-        <div>
-            <h1 class="text-2xl font-bold mb-6 text-blue-400">Monitor MQTT</h1>
+        <!-- Contenido del menú -->
+        <div class="mt-12 space-y-6">
+            <h1 class="text-2xl font-bold">Menú</h1>
 
-            <div class="mb-8">
-                <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-2">Estado</h2>
-                <div id="status-display" class="p-3 text-center rounded-lg bg-red-900 text-red-300 font-semibold transition-all">
-                    Desconectado
-                </div>
-            </div>
-
-            <div class="space-y-3">
-                <button id="connect-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded-lg text-white font-semibold transition">
-                    Conectar
-                </button>
-                <button id="disconnect-btn" class="w-full bg-gray-600 hover:bg-gray-500 py-2 rounded-lg text-white font-semibold transition" disabled>
-                    Desconectar
-                </button>
-            </div>
+            <a href="#" class="block py-2 px-3 bg-gray-700 rounded-lg">Inicio</a>
+            <a href="#" class="block py-2 px-3 bg-gray-700 rounded-lg">Sensores</a>
+            <a href="#" class="block py-2 px-3 bg-gray-700 rounded-lg">Control</a>
+            <a href="#" class="block py-2 px-3 bg-gray-700 rounded-lg">Configuración</a>
         </div>
-
-        <footer class="text-center text-gray-500 text-xs mt-8">
-            💨 Sistema de Monitoreo de Gases
-        </footer>
-
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 p-10 overflow-y-auto md:ml-72">
-        <header class="text-center mb-10">
-            <h2 class="text-3xl font-bold text-white mb-2">Detector de Gases en Tiempo Real</h2>
-            <p class="text-gray-400 text-sm">Visualización directa desde el servidor HiveMQ</p>
-        </header>
-
-        <!-- Panel de sensores -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-
-            <!-- MQ2 -->
-            <div class="data-card bg-gradient-to-br from-green-500/20 to-green-600/10 p-6 rounded-2xl border border-green-500 hover:shadow-green-500/20">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-xl font-semibold text-green-300">Sensor MQ2</h3>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="text-5xl font-extrabold text-green-400 text-center">
-                    <span id="mq2-value">--</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-3 text-center">Tópico: gases/monitor/mq2</p>
-            </div>
-
-            <!-- MQ4 -->
-            <div class="data-card bg-gradient-to-br from-yellow-500/20 to-yellow-600/10 p-6 rounded-2xl border border-yellow-500 hover:shadow-yellow-500/20">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-xl font-semibold text-yellow-300">Sensor MQ4</h3>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="text-5xl font-extrabold text-yellow-400 text-center">
-                    <span id="mq4-value">--</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-3 text-center">Tópico: gases/monitor/mq4</p>
-            </div>
-
-            <!-- MQ5 -->
-            <div class="data-card bg-gradient-to-br from-red-500/20 to-red-600/10 p-6 rounded-2xl border border-red-500 hover:shadow-red-500/20">
-                <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-xl font-semibold text-red-300">Sensor MQ5</h3>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="text-5xl font-extrabold text-red-400 text-center">
-                    <span id="mq5-value">--</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-3 text-center">Tópico: gases/monitor/mq5</p>
-            </div>
-
-        </section>
-
-        <!-- Panel de controles -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-            <!-- Ventilador -->
-            <div class="data-card bg-gray-800 p-6 rounded-2xl border border-green-500 hover:shadow-green-500/20">
-                <h3 class="text-xl font-semibold text-white mb-4 text-center">Control del Ventilador</h3>
-                <div class="flex justify-center space-x-4">
-                    <button id="motor-btn-on" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">Encender</button>
-                    <button id="motor-btn-off" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">Apagar</button>
-                </div>
-                <p id="ventilador-estado" class="text-center text-gray-300 mt-3">Estado: Apagado</p>
-            </div>
-
-            <!-- Ventanas -->
-            <div class="data-card bg-gray-800 p-6 rounded-2xl border border-yellow-500 hover:shadow-yellow-500/20">
-                <h3 class="text-xl font-semibold text-white mb-4 text-center">Control de Ventanas</h3>
-                <div class="flex justify-center space-x-4">
-                    <button id="ventana-btn-abrir" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">Abrir</button>
-                    <button id="ventana-btn-cerrar" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">Cerrar</button>
-                </div>
-                <p id="ventana-estado" class="text-center text-gray-300 mt-3">Estado: Cerrada</p>
-            </div>
-
-            <!-- Alarma -->
-            <div class="data-card bg-gray-800 p-6 rounded-2xl border border-red-500 hover:shadow-red-500/20">
-                <h3 class="text-xl font-semibold text-white mb-4 text-center">Alarma</h3>
-                <div class="flex justify-center space-x-4">
-                    <button id="alarma-btn-on" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">Activar</button>
-                    <button id="alarma-btn-off" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">Desactivar</button>
-                </div>
-                <p id="alarma-estado" class="text-center text-gray-300 mt-3">Estado: Desactivada</p>
-            </div>
-
-        </section>
+    <!-- Contenido principal -->
+    <main class="flex-1 p-6 z-10">
+        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <p class="mt-2 text-gray-300">
+            Aquí va tu contenido del panel de gases.
+        </p>
     </main>
 
-    <!-- SCRIPT MENU RESPONSIVE -->
+    <!-- SCRIPTS -->
     <script>
         const sidebar = document.getElementById("sidebar");
-        const openBtn = document.getElementById("openMenu");
-        const closeBtn = document.getElementById("closeMenu");
+        const menuBtn = document.getElementById("menuBtn");
+        const closeBtn = document.getElementById("closeBtn");
+        const overlay = document.getElementById("overlay");
 
-        openBtn.addEventListener("click", () => {
-            sidebar.classList.remove("-translate-x-full");
-            openBtn.style.display = "none"; // OCULTAR BOTÓN ABRIR
-        });
+        function openMenu() {
+            sidebar.style.transform = "translateX(0)";
+            overlay.classList.remove("pointer-events-none");
+            overlay.style.opacity = "1";
+            menuBtn.classList.add("hidden-menu-btn");
+        }
 
-        closeBtn.addEventListener("click", () => {
-            sidebar.classList.add("-translate-x-full");
-            openBtn.style.display = "block"; // VOLVER A MOSTRAR BOTÓN ABRIR
-        });
+        function closeMenu() {
+            sidebar.style.transform = "translateX(-100%)";
+            overlay.style.opacity = "0";
+            setTimeout(() => {
+                overlay.classList.add("pointer-events-none");
+            }, 300);
+            menuBtn.classList.remove("hidden-menu-btn");
+        }
+
+        menuBtn.addEventListener("click", openMenu);
+        closeBtn.addEventListener("click", closeMenu);
+
+        // CERRAR TOCANDO FUERA DEL PANEL
+        overlay.addEventListener("click", closeMenu);
     </script>
-
-    <!-- Scripts MQTT + Firebase -->
-    <script type="module" src="firebase.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <script src="mqtt.js"></script>
 
 </body>
 </html>
