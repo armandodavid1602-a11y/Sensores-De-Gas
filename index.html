@@ -27,12 +27,12 @@
                transition-transform duration-300 z-40"
         aria-hidden="true">
 
-        <!-- BOTÓN PARA CERRAR (solo móvil) colocado en esquina superior derecha del panel -->
+        <!-- BOTÓN PARA CERRAR (solo móvil) -->
         <button id="closeMenu"
             class="md:hidden absolute top-3 right-3 bg-gray-700 p-1.5 rounded text-sm"
             aria-label="Cerrar menú">✖</button>
 
-        <div class="relative"> <!-- wrapper relativo para que el botón X quede dentro -->
+        <div class="relative">
             <h1 class="text-2xl font-bold mb-6 text-blue-400">Monitor MQTT</h1>
 
             <div class="mb-8">
@@ -63,15 +63,16 @@
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <!-- md:ml-72 mantiene margen cuando la sidebar está fija en escritorio -->
-    <main id="mainContent" class="flex-1 p-6 md:p-10 overflow-y-auto md:ml-72 transition-all">
+    <main id="mainContent"
+        class="flex-1 p-6 md:p-10 overflow-y-auto md:ml-72 transition-all mx-auto max-w-5xl">
+
         <header class="text-center mb-8 md:mb-10">
             <h2 class="text-3xl font-bold text-white mb-2">Detector de Gases en Tiempo Real</h2>
             <p class="text-gray-400 text-sm">Visualización directa desde el servidor HiveMQ</p>
         </header>
 
         <!-- Panel de sensores -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10 mx-auto">
 
             <!-- MQ2 -->
             <div
@@ -129,17 +130,21 @@
 
         </section>
 
-        <!-- Panel de controles (debajo de sensores) -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Panel de controles -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto">
 
             <!-- Ventilador -->
             <div class="data-card bg-gray-800 p-6 rounded-2xl border border-green-500 hover:shadow-green-500/20">
                 <h3 class="text-xl font-semibold text-white mb-4 text-center">Control del Ventilador</h3>
                 <div class="flex justify-center space-x-4">
                     <button id="motor-btn-on"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">Encender</button>
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">
+                        Encender
+                    </button>
                     <button id="motor-btn-off"
-                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">Apagar</button>
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">
+                        Apagar
+                    </button>
                 </div>
                 <p id="ventilador-estado" class="text-center text-gray-300 mt-3">Estado: Apagado</p>
             </div>
@@ -149,9 +154,13 @@
                 <h3 class="text-xl font-semibold text-white mb-4 text-center">Control de Ventanas</h3>
                 <div class="flex justify-center space-x-4">
                     <button id="ventana-btn-abrir"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">Abrir</button>
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">
+                        Abrir
+                    </button>
                     <button id="ventana-btn-cerrar"
-                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">Cerrar</button>
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">
+                        Cerrar
+                    </button>
                 </div>
                 <p id="ventana-estado" class="text-center text-gray-300 mt-3">Estado: Cerrada</p>
             </div>
@@ -161,9 +170,13 @@
                 <h3 class="text-xl font-semibold text-white mb-4 text-center">Alarma</h3>
                 <div class="flex justify-center space-x-4">
                     <button id="alarma-btn-on"
-                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">Activar</button>
+                        class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition">
+                        Activar
+                    </button>
                     <button id="alarma-btn-off"
-                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">Desactivar</button>
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full transition">
+                        Desactivar
+                    </button>
                 </div>
                 <p id="alarma-estado" class="text-center text-gray-300 mt-3">Estado: Desactivada</p>
             </div>
@@ -181,17 +194,13 @@
 
             function openSidebar() {
                 sidebar.classList.remove("-translate-x-full");
-                sidebar.setAttribute("aria-hidden", "false");
                 overlay.classList.remove("hidden");
-                // ocultar botón abrir para que no tape
                 openBtn.style.display = "none";
-                // bloquear scroll cuerpo (opcional)
                 document.body.style.overflow = "hidden";
             }
 
             function closeSidebar() {
                 sidebar.classList.add("-translate-x-full");
-                sidebar.setAttribute("aria-hidden", "true");
                 overlay.classList.add("hidden");
                 openBtn.style.display = "flex";
                 document.body.style.overflow = "";
@@ -199,46 +208,34 @@
 
             openBtn.addEventListener("click", openSidebar);
             closeBtn.addEventListener("click", closeSidebar);
-
-            // cerrar al pulsar overlay (clic fuera del panel)
             overlay.addEventListener("click", closeSidebar);
 
-            // cerrar con ESC (accesibilidad)
             document.addEventListener("keydown", (e) => {
                 if (e.key === "Escape") closeSidebar();
             });
 
-            // Asegurar el estado correcto en resize (por ejemplo, si cambia a md)
             window.addEventListener("resize", () => {
                 if (window.innerWidth >= 768) {
-                    // en escritorio sidebar siempre visible
                     sidebar.classList.remove("-translate-x-full");
                     overlay.classList.add("hidden");
                     openBtn.style.display = "none";
                     document.body.style.overflow = "";
                 } else {
-                    // restablecer a estado cerrado en móvil
-                    if (sidebar.getAttribute("aria-hidden") === "true" || sidebar.classList.contains("-translate-x-full")) {
+                    if (sidebar.classList.contains("-translate-x-full"))
                         openBtn.style.display = "flex";
-                    } else {
-                        openBtn.style.display = "none";
-                    }
                 }
             });
 
-            // Al cargar, ajustar visibilidad del botón openMenu según ancho
             window.addEventListener("load", () => {
                 if (window.innerWidth >= 768) openBtn.style.display = "none";
-                else openBtn.style.display = "flex";
             });
         })();
     </script>
 
-    <!-- Scripts MQTT + Firebase (tu mqtt.js y firebase.js) -->
+    <!-- Scripts MQTT + Firebase -->
     <script type="module" src="firebase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script src="mqtt.js"></script>
 
 </body>
 </html>
-
