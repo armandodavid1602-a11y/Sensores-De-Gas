@@ -4,7 +4,7 @@
 
 // --- Configuración MQTT ---
 const BROKER_HOST = "60eed51709a44eea9c3aa381a77f23d6.s1.eu.hivemq.cloud";
-const BROKER_PORT = 8884; // WebSocket seguro TLS
+const BROKER_PORT = 8883; // WebSocket seguro TLS
 const CLIENT_ID = "ClienteWeb_Gas_" + Math.floor(Math.random() * 10000);
 const USERNAME = "Maxito";
 const PASSWORD = "Rasarm1602";
@@ -209,3 +209,4 @@ alarmaOffBtn.addEventListener("click", () => {
     client.send(msg);
   }
 });
+
