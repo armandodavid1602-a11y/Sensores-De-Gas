@@ -6,10 +6,6 @@
     <title>Monitor de Gases MQTT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css" />
-    <style>
-        .gauge-container { margin-top: 0.5rem; height: 15px; background: #ddd; border-radius: 10px; overflow: hidden; }
-        .gauge-bar { height: 100%; width: 0%; background: #4ade80; transition: width 0.3s; }
-    </style>
 </head>
 
 <body class="min-h-screen flex bg-[#e6f4ff] text-[#1e293b]">
@@ -17,7 +13,9 @@
     <!-- BOTÓN PARA ABRIR MENÚ (solo móvil) -->
     <button id="openMenu"
         class="md:hidden fixed top-2 left-2 z-50 bg-[#c2e7ff] p-2 rounded-lg shadow-md text-sm w-10 h-10 flex items-center justify-center text-[#003049]"
-        aria-label="Abrir menú">☰</button>
+        aria-label="Abrir menú">
+        ☰
+    </button>
 
     <!-- OVERLAY -->
     <div id="overlay" class="fixed inset-0 bg-black bg-opacity-20 z-30 hidden"></div>
@@ -60,6 +58,7 @@
         <footer class="text-center text-[#1e293b] text-xs mt-8">
             💨 Sistema de Monitoreo de Gases
         </footer>
+
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -76,31 +75,34 @@
 
             <!-- MQ2 -->
             <div class="data-card border border-[#8ed08d] bg-white/50 p-6 rounded-2xl hover:shadow-green-500/20">
-                <h3 class="text-xl font-semibold text-[#116b13] mb-2">Sensor MQ2</h3>
+                <div class="flex items-start justify-between mb-3">
+                    <h3 class="text-xl font-semibold text-[#116b13]">Sensor MQ2</h3>
+                </div>
                 <div class="text-5xl font-extrabold text-[#2a8f45] text-center">
                     <span id="mq2-value">--</span>
                 </div>
-                <div class="gauge-container"><div id="mq2-gauge" class="gauge-bar"></div></div>
                 <p class="text-xs text-[#1e293b] mt-3 text-center">Tópico: gases/monitor/mq2</p>
             </div>
 
             <!-- MQ4 -->
             <div class="data-card border border-[#d9c25b] bg-white/50 p-6 rounded-2xl hover:shadow-yellow-500/20">
-                <h3 class="text-xl font-semibold text-[#b58900] mb-2">Sensor MQ4</h3>
+                <div class="flex items-start justify-between mb-3">
+                    <h3 class="text-xl font-semibold text-[#b58900]">Sensor MQ4</h3>
+                </div>
                 <div class="text-5xl font-extrabold text-[#b58900] text-center">
                     <span id="mq4-value">--</span>
                 </div>
-                <div class="gauge-container"><div id="mq4-gauge" class="gauge-bar"></div></div>
                 <p class="text-xs text-[#1e293b] mt-3 text-center">Tópico: gases/monitor/mq4</p>
             </div>
 
             <!-- MQ5 -->
             <div class="data-card border border-[#f28b8b] bg-white/50 p-6 rounded-2xl hover:shadow-red-500/20">
-                <h3 class="text-xl font-semibold text-[#d43f3a] mb-2">Sensor MQ5</h3>
+                <div class="flex items-start justify-between mb-3">
+                    <h3 class="text-xl font-semibold text-[#d43f3a]">Sensor MQ5</h3>
+                </div>
                 <div class="text-5xl font-extrabold text-[#d43f3a] text-center">
                     <span id="mq5-value">--</span>
                 </div>
-                <div class="gauge-container"><div id="mq5-gauge" class="gauge-bar"></div></div>
                 <p class="text-xs text-[#1e293b] mt-3 text-center">Tópico: gases/monitor/mq5</p>
             </div>
 
@@ -206,27 +208,6 @@
     <script type="module" src="firebase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <script src="mqtt.js"></script>
-
-    <script>
-        // Función para actualizar gauges
-        function updateGauge(sensorId, value) {
-            const gauge = document.getElementById(sensorId + "-gauge");
-            let percentage = Math.min((value / 1023) * 100, 100);
-            gauge.style.width = percentage + "%";
-            if (percentage < 33) gauge.style.background = "#4ade80";
-            else if (percentage < 66) gauge.style.background = "#facc15";
-            else gauge.style.background = "#f87171";
-        }
-
-        // Observar cambios en los valores de sensores
-        const observerMQ2 = new MutationObserver(() => updateGauge("mq2", parseFloat(document.getElementById("mq2-value").textContent) || 0));
-        const observerMQ4 = new MutationObserver(() => updateGauge("mq4", parseFloat(document.getElementById("mq4-value").textContent) || 0));
-        const observerMQ5 = new MutationObserver(() => updateGauge("mq5", parseFloat(document.getElementById("mq5-value").textContent) || 0));
-
-        observerMQ2.observe(document.getElementById("mq2-value"), { childList: true });
-        observerMQ4.observe(document.getElementById("mq4-value"), { childList: true });
-        observerMQ5.observe(document.getElementById("mq5-value"), { childList: true });
-    </script>
 
 </body>
 </html>
