@@ -1,6 +1,6 @@
-/* =======================
-mqtt.js - Conexión HiveMQ para navegador
-======================= */
+// =======================
+// mqtt.js - Conexión HiveMQ
+// =======================
 
 // --- Configuración MQTT ---
 const BROKER_HOST = "60eed51709a44eea9c3aa381a77f23d6.s1.eu.hivemq.cloud";
@@ -8,6 +8,7 @@ const BROKER_PORT = 8884; // WebSocket seguro TLS
 const CLIENT_ID = "ClienteWeb_Gas_" + Math.floor(Math.random() * 10000);
 const USERNAME = "Maxito";
 const PASSWORD = "Rasarm1602";
+const KEEP_ALIVE_INTERVAL = 60;
 
 // --- Tópicos ---
 const TOPIC_MQ2 = "gases/monitor/mq2";
@@ -46,163 +47,165 @@ let isConnected = false;
 // Funciones de UI
 // =======================
 function updateStatus(message, isError = false) {
-statusDisplay.textContent = message;
-statusDisplay.className = "p-3 text-center rounded-lg font-semibold transition-all";
-if (isConnected) {
-statusDisplay.classList.add("bg-green-800", "text-green-300");
-} else if (isError) {
-statusDisplay.classList.add("bg-red-900", "text-red-300");
-} else {
-statusDisplay.classList.add("bg-yellow-800", "text-yellow-300");
-}
+  statusDisplay.textContent = message;
+  statusDisplay.className = "p-3 text-center rounded-lg font-semibold transition-all";
+  if (isConnected) {
+    statusDisplay.classList.add("bg-green-800", "text-green-300");
+  } else if (isError) {
+    statusDisplay.classList.add("bg-red-900", "text-red-300");
+  } else {
+    statusDisplay.classList.add("bg-yellow-800", "text-yellow-300");
+  }
 }
 
 function updateDeviceState(element, state, colorClass) {
-element.textContent = `Estado: ${state}`;
-element.className = `text-center mt-3 ${colorClass} font-semibold`;
+  element.textContent = `Estado: ${state}`;
+  element.className = `text-center mt-3 ${colorClass} font-semibold`;
 }
 
 // =======================
 // Callbacks MQTT
 // =======================
 function onMessageArrived(message) {
-const topic = message.destinationName;
-const payload = message.payloadString.trim();
+  const topic = message.destinationName;
+  const payload = message.payloadString.trim();
 
-const value = parseFloat(payload);
-if (!isNaN(value)) {
-if (topic === TOPIC_MQ2) mq2Value.textContent = value;
-if (topic === TOPIC_MQ4) mq4Value.textContent = value;
-if (topic === TOPIC_MQ5) mq5Value.textContent = value;
-}
+  // Sensores
+  const value = parseFloat(payload);
+  if (!isNaN(value)) {
+    if (topic === TOPIC_MQ2) mq2Value.textContent = value;
+    if (topic === TOPIC_MQ4) mq4Value.textContent = value;
+    if (topic === TOPIC_MQ5) mq5Value.textContent = value;
+  }
 
-if (topic === TOPIC_VENTILADOR) {
-if (payload.includes("VENTILADOR=ON")) updateDeviceState(estadoVentilador, "Encendido", "text-green-400");
-if (payload.includes("VENTILADOR=OFF")) updateDeviceState(estadoVentilador, "Apagado", "text-red-400");
-}
+  // Ventilador
+  if (topic === TOPIC_VENTILADOR) {
+    if (payload.includes("VENTILADOR=ON")) updateDeviceState(estadoVentilador, "Encendido", "text-green-400");
+    if (payload.includes("VENTILADOR=OFF")) updateDeviceState(estadoVentilador, "Apagado", "text-red-400");
+  }
 
-if (topic === TOPIC_VENTANA) {
-if (payload.includes("VENTANA=ABRIR")) updateDeviceState(ventanaEstado, "Abierta", "text-green-400");
-if (payload.includes("VENTANA=CERRAR")) updateDeviceState(ventanaEstado, "Cerrada", "text-red-400");
-}
+  // Ventana
+  if (topic === TOPIC_VENTANA) {
+    if (payload.includes("VENTANA=ABRIR")) updateDeviceState(ventanaEstado, "Abierta", "text-green-400");
+    if (payload.includes("VENTANA=CERRAR")) updateDeviceState(ventanaEstado, "Cerrada", "text-red-400");
+  }
 
-if (topic === TOPIC_ALARMA) {
-if (payload.includes("ALARM=ON")) updateDeviceState(alarmaEstado, "Activada", "text-red-400");
-if (payload.includes("ALARM=OFF")) updateDeviceState(alarmaEstado, "Desactivada", "text-green-400");
-}
+  // Alarma
+  if (topic === TOPIC_ALARMA) {
+    if (payload.includes("ALARM=ON")) updateDeviceState(alarmaEstado, "Activada", "text-red-400");
+    if (payload.includes("ALARM=OFF")) updateDeviceState(alarmaEstado, "Desactivada", "text-green-400");
+  }
 }
 
 function onConnect() {
-isConnected = true;
-updateStatus("Conectado a MQTT ✅");
+  isConnected = true;
+  updateStatus("Conectado a MQTT ✅");
 
-client.subscribe(TOPIC_MQ2);
-client.subscribe(TOPIC_MQ4);
-client.subscribe(TOPIC_MQ5);
-client.subscribe(TOPIC_VENTILADOR);
-client.subscribe(TOPIC_VENTANA);
-client.subscribe(TOPIC_ALARMA);
+  // Suscribirse a tópicos
+  client.subscribe(TOPIC_MQ2);
+  client.subscribe(TOPIC_MQ4);
+  client.subscribe(TOPIC_MQ5);
+  client.subscribe(TOPIC_VENTILADOR);
+  client.subscribe(TOPIC_VENTANA);
+  client.subscribe(TOPIC_ALARMA);
 
-connectBtn.disabled = true;
-disconnectBtn.disabled = false;
+  connectBtn.disabled = true;
+  disconnectBtn.disabled = false;
 }
 
 function onConnectionLost(response) {
-isConnected = false;
-updateStatus("Conexión perdida ❌", true);
-connectBtn.disabled = false;
-disconnectBtn.disabled = true;
+  isConnected = false;
+  updateStatus("Conexión perdida ❌", true);
+  connectBtn.disabled = false;
+  disconnectBtn.disabled = true;
 }
 
 // =======================
 // Conectar / Desconectar
 // =======================
 function connectToMqtt() {
-try {
-client = new Paho.MQTT.Client(BROKER_HOST, Number(BROKER_PORT), "/mqtt", CLIENT_ID);
-client.onMessageArrived = onMessageArrived;
-client.onConnectionLost = onConnectionLost;
+  client = new Paho.MQTT.Client(BROKER_HOST, Number(BROKER_PORT), "/mqtt", CLIENT_ID);
+  client.onMessageArrived = onMessageArrived;
+  client.onConnectionLost = onConnectionLost;
 
-```
-client.connect({
-  useSSL: true,
-  userName: USERNAME,
-  password: PASSWORD,
-  keepAliveInterval: 60,
-  timeout: 5,
-  onSuccess: onConnect,
-  onFailure: function (err) {
-    console.error("Error MQTT:", err);
-    updateStatus("Error MQTT: " + (err.errorMessage || "No se pudo conectar"), true);
-  }
-});
+  const options = {
+    useSSL: true,
+    userName: USERNAME,
+    password: PASSWORD,
+    keepAliveInterval: KEEP_ALIVE_INTERVAL,
+    timeout: 5,
+    onSuccess: onConnect,
+    onFailure: function (e) {
+      console.error("Error MQTT:", e);
+      updateStatus("Error: " + e.errorMessage, true);
+    },
+  };
 
-updateStatus("Conectando...");
-```
-
-} catch (e) {
-console.error("Excepción MQTT:", e);
-updateStatus("Error: " + e.message, true);
-}
+  client.connect(options);
 }
 
 function disconnectFromMqtt() {
-if (client && isConnected) {
-client.disconnect();
-isConnected = false;
-updateStatus("Desconectado ❌");
-connectBtn.disabled = false;
-disconnectBtn.disabled = true;
-}
+  if (client && isConnected) {
+    client.disconnect();
+    isConnected = false;
+    updateStatus("Desconectado ❌");
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
+  }
 }
 
 // =======================
 // Botones de UI
 // =======================
+
+// Conectar / Desconectar
 connectBtn.addEventListener("click", connectToMqtt);
 disconnectBtn.addEventListener("click", disconnectFromMqtt);
 
+// Ventilador
 motorBtnOn.addEventListener("click", () => {
-if (isConnected) {
-const msg = new Paho.MQTT.Message("VENTILADOR=ON");
-msg.destinationName = TOPIC_VENTILADOR;
-client.send(msg);
-}
+  if (isConnected) {
+    const msg = new Paho.MQTT.Message("VENTILADOR=ON");
+    msg.destinationName = TOPIC_VENTILADOR;
+    client.send(msg);
+  }
 });
 motorBtnOff.addEventListener("click", () => {
-if (isConnected) {
-const msg = new Paho.MQTT.Message("VENTILADOR=OFF");
-msg.destinationName = TOPIC_VENTILADOR;
-client.send(msg);
-}
+  if (isConnected) {
+    const msg = new Paho.MQTT.Message("VENTILADOR=OFF");
+    msg.destinationName = TOPIC_VENTILADOR;
+    client.send(msg);
+  }
 });
 
+// Ventana
 ventanaAbrirBtn.addEventListener("click", () => {
-if (isConnected) {
-const msg = new Paho.MQTT.Message("VENTANA=ABRIR");
-msg.destinationName = TOPIC_VENTANA;
-client.send(msg);
-}
+  if (isConnected) {
+    const msg = new Paho.MQTT.Message("VENTANA=ABRIR");
+    msg.destinationName = TOPIC_VENTANA;
+    client.send(msg);
+  }
 });
 ventanaCerrarBtn.addEventListener("click", () => {
-if (isConnected) {
-const msg = new Paho.MQTT.Message("VENTANA=CERRAR");
-msg.destinationName = TOPIC_VENTANA;
-client.send(msg);
-}
+  if (isConnected) {
+    const msg = new Paho.MQTT.Message("VENTANA=CERRAR");
+    msg.destinationName = TOPIC_VENTANA;
+    client.send(msg);
+  }
 });
 
+// Alarma
 alarmaOnBtn.addEventListener("click", () => {
-if (isConnected) {
-const msg = new Paho.MQTT.Message("ALARM=ON");
-msg.destinationName = TOPIC_ALARMA;
-client.send(msg);
-}
+  if (isConnected) {
+    const msg = new Paho.MQTT.Message("ALARM=ON");
+    msg.destinationName = TOPIC_ALARMA;
+    client.send(msg);
+  }
 });
 alarmaOffBtn.addEventListener("click", () => {
-if (isConnected) {
-const msg = new Paho.MQTT.Message("ALARM=OFF");
-msg.destinationName = TOPIC_ALARMA;
-client.send(msg);
-}
+  if (isConnected) {
+    const msg = new Paho.MQTT.Message("ALARM=OFF");
+    msg.destinationName = TOPIC_ALARMA;
+    client.send(msg);
+  }
 });
