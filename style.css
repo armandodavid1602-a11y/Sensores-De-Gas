@@ -1,8 +1,8 @@
 /* --- Estilos generales --- */
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #0f172a; /* panel principal oscuro */
-    color: #e2e8f0;
+    background-color: #e6f4ff; /* Celeste pastel suave */
+    color: #1e293b; /* Texto gris oscuro azulado */
     margin: 0;
     padding: 0;
 }
@@ -10,6 +10,8 @@ body {
 /* --- Panel lateral --- */
 aside {
     height: 100vh;
+    background-color: #d9efff; /* Celeste clarito */
+    border-right: 1px solid #c2dff7;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -17,15 +19,17 @@ aside {
 
 /* --- Tarjetas de datos --- */
 .data-card {
+    background: #ffffffcc; /* Blanco con ligera transparencia */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
     border-radius: 1rem;
     padding: 1.5rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .data-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 25px rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
 }
 
 /* --- Estado de conexión --- */
@@ -37,17 +41,39 @@ aside {
     text-align: center;
 }
 
+/* --- Colores del status MQTT --- */
+.bg-green-800.text-green-300 {
+    background-color: #c8f7cb !important;
+    color: #116b13 !important;
+}
+.bg-red-900.text-red-300 {
+    background-color: #ffe1e1 !important;
+    color: #992222 !important;
+}
+.bg-yellow-800.text-yellow-300 {
+    background-color: #fff5cc !important;
+    color: #b88b00 !important;
+}
+
 /* --- Botones generales --- */
 button {
     font-weight: 600;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
+    padding: 0.55rem 1.1rem;
+    border-radius: 0.6rem;
     transition: transform 0.2s ease, background-color 0.2s ease;
     cursor: pointer;
+    border: none;
+}
+
+/* --- Estilo de botones pastel --- */
+button {
+    background-color: #aee0ff; /* Celeste pastel */
+    color: #003049;
 }
 
 button:hover:not(:disabled) {
     transform: translateY(-2px) scale(1.03);
+    background-color: #9ad6ff;
 }
 
 button:active:not(:disabled) {
@@ -69,9 +95,9 @@ button:disabled {
 }
 
 /* --- Colores para estados --- */
-.text-green-400 { color: #34d399; }
-.text-red-400 { color: #f87171; }
-.text-yellow-400 { color: #facc15; }
+.text-green-400 { color: #2a8f45; }
+.text-red-400 { color: #d43f3a; }
+.text-yellow-400 { color: #b58900; }
 
 /* --- Responsive --- */
 @media (max-width: 768px) {
