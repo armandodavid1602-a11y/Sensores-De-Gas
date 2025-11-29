@@ -7,8 +7,8 @@ const PASSWORD = 'Rasarm1602';
 const KEEP_ALIVE_INTERVAL = 60;
 
 // --- Tópicos ---
-const TOPIC_MQ4 = 'gases/monitor/mq4';
 const TOPIC_MQ2 = 'gases/monitor/mq2';
+const TOPIC_MQ4 = 'gases/monitor/mq4';
 const TOPIC_MQ5 = 'gases/monitor/mq5';
 const TOPIC_VENTILADOR = 'gases/control/ventilador';
 const TOPIC_VENTANA = 'gases/control/ventana';
@@ -16,9 +16,8 @@ const TOPIC_ALARMA = 'gases/control/alarma';
 
 // --- Elementos HTML ---
 const statusDisplay = document.getElementById('status-display');
-
-const mq4Value = document.getElementById('mq4-value');
 const mq2Value = document.getElementById('mq2-value');
+const mq4Value = document.getElementById('mq4-value');
 const mq5Value = document.getElementById('mq5-value');
 
 const connectBtn = document.getElementById('connect-btn');
@@ -39,15 +38,15 @@ const alarmaEstado = document.getElementById('alarma-estado');
 let client = null;
 let isConnected = false;
 
-// --- UI ---
+// --- Funciones UI ---
 function updateStatus(status, isError = false) {
     statusDisplay.textContent = status;
     statusDisplay.className = 'p-3 text-center rounded-lg font-semibold transition-all';
 
-    if (isConnected) {
-        statusDisplay.classList.add('bg-green-800', 'text-green-300');
-    } else if (isError) {
+    if (isError) {
         statusDisplay.classList.add('bg-red-900', 'text-red-300');
+    } else if (isConnected) {
+        statusDisplay.classList.add('bg-green-800', 'text-green-300');
     } else {
         statusDisplay.classList.add('bg-yellow-800', 'text-yellow-300');
     }
@@ -58,11 +57,12 @@ function updateDeviceState(element, state, colorClass) {
     element.className = `text-center mt-3 ${colorClass} font-semibold`;
 }
 
-// --- MQTT Callbacks ---
+// --- Callbacks MQTT ---
 function onMessageArrived(message) {
     const topic = message.destinationName;
     const payload = message.payloadString.trim();
 
+    // Sensores
     const value = parseFloat(payload);
     if (!isNaN(value)) {
         if (topic === TOPIC_MQ2) mq2Value.textContent = value;
@@ -70,16 +70,19 @@ function onMessageArrived(message) {
         if (topic === TOPIC_MQ5) mq5Value.textContent = value;
     }
 
+    // Ventilador
     if (topic === TOPIC_VENTILADOR) {
         if (payload.includes("VENTILADOR=ON")) updateDeviceState(estadoVentilador, 'Encendido', 'text-green-400');
         else if (payload.includes("VENTILADOR=OFF")) updateDeviceState(estadoVentilador, 'Apagado', 'text-red-400');
     }
 
+    // Ventanas
     if (topic === TOPIC_VENTANA) {
         if (payload.includes("VENTANA=ABRIR")) updateDeviceState(ventanaEstado, 'Abierta', 'text-green-400');
         else if (payload.includes("VENTANA=CERRAR")) updateDeviceState(ventanaEstado, 'Cerrada', 'text-red-400');
     }
 
+    // Alarma
     if (topic === TOPIC_ALARMA) {
         if (payload.includes("ALARM=ON")) updateDeviceState(alarmaEstado, 'Activada', 'text-red-400');
         else if (payload.includes("ALARM=OFF")) updateDeviceState(alarmaEstado, 'Desactivada', 'text-green-400');
@@ -90,19 +93,28 @@ function onConnect() {
     isConnected = true;
     updateStatus("Conectado a MQTT ✅");
 
-    client.subscribe(TOPIC_MQ2);
-    client.subscribe(TOPIC_MQ4);
-    client.subscribe(TOPIC_MQ5);
-    client.subscribe(TOPIC_VENTILADOR);
-    client.subscribe(TOPIC_VENTANA);
-    client.subscribe(TOPIC_ALARMA);
+    // Suscribirse a todos los tópicos
+    [TOPIC_MQ2, TOPIC_MQ4, TOPIC_MQ5, TOPIC_VENTILADOR, TOPIC_VENTANA, TOPIC_ALARMA].forEach(t => {
+        client.subscribe(t);
+    });
+
+    connectBtn.disabled = true;
+    disconnectBtn.disabled = false;
+}
+
+function onConnectionLost(response) {
+    isConnected = false;
+    updateStatus("Conexión perdida ❌", true);
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
 }
 
 // --- Conexión / Desconexión ---
 function connectToMqtt() {
-    client = new Paho.MQTT.Client(BROKER_HOST, BROKER_PORT, "/mqtt", CLIENT_ID);
+    client = new Paho.MQTT.Client(BROKER_HOST, Number(BROKER_PORT), CLIENT_ID);
+
     client.onMessageArrived = onMessageArrived;
-    client.onConnectionLost = () => updateStatus("Conexión perdida ❌", true);
+    client.onConnectionLost = onConnectionLost;
 
     const options = {
         useSSL: true,
@@ -120,33 +132,40 @@ function connectToMqtt() {
 function disconnectFromMqtt() {
     if (client && client.isConnected()) {
         client.disconnect();
-        isConnected = false;
-        updateStatus("Desconectado ❌");
     }
+    isConnected = false;
+    updateStatus("Desconectado ❌");
+    connectBtn.disabled = false;
+    disconnectBtn.disabled = true;
 }
 
 // --- Botones ---
+connectBtn.addEventListener('click', connectToMqtt);
+disconnectBtn.addEventListener('click', disconnectFromMqtt);
+
 // Ventilador
 motorBtnOn.addEventListener('click', () => {
+    if (!isConnected) return;
     const msg = new Paho.MQTT.Message("VENTILADOR=ON");
     msg.destinationName = TOPIC_VENTILADOR;
     client.send(msg);
 });
-
 motorBtnOff.addEventListener('click', () => {
+    if (!isConnected) return;
     const msg = new Paho.MQTT.Message("VENTILADOR=OFF");
     msg.destinationName = TOPIC_VENTILADOR;
     client.send(msg);
 });
 
-// Ventana
+// Ventanas
 ventanaAbrirBtn.addEventListener('click', () => {
+    if (!isConnected) return;
     const msg = new Paho.MQTT.Message("VENTANA=ABRIR");
     msg.destinationName = TOPIC_VENTANA;
     client.send(msg);
 });
-
 ventanaCerrarBtn.addEventListener('click', () => {
+    if (!isConnected) return;
     const msg = new Paho.MQTT.Message("VENTANA=CERRAR");
     msg.destinationName = TOPIC_VENTANA;
     client.send(msg);
@@ -154,12 +173,13 @@ ventanaCerrarBtn.addEventListener('click', () => {
 
 // Alarma
 alarmaOnBtn.addEventListener('click', () => {
+    if (!isConnected) return;
     const msg = new Paho.MQTT.Message("ALARM=ON");
     msg.destinationName = TOPIC_ALARMA;
     client.send(msg);
 });
-
 alarmaOffBtn.addEventListener('click', () => {
+    if (!isConnected) return;
     const msg = new Paho.MQTT.Message("ALARM=OFF");
     msg.destinationName = TOPIC_ALARMA;
     client.send(msg);
